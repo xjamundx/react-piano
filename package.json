@@ -1,0 +1,17 @@
+{
+  "name": "piano",
+  "version": "0.0.1",
+  "description": "react test",
+  "main": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "jamunferguson@paypal.com",
+  "license": "MIT",
+  "dependencies": {
+    "react": "^0.11.1"
+  },
+  "devDependencies": {
+    "reactify": "^0.14.0"
+  }
+}

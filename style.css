@@ -1,0 +1,63 @@
+html, body {
+	background: teal;
+	padding: 20px;
+	margin: 0;
+}
+
+div {
+	box-sizing: border-box;
+}
+
+.key {
+	border: 1px solid black;
+	background: white;
+	height: 100%;
+	width: 40px;
+	float: left;
+	margin-left: 1px;
+	color: khaki;
+}
+
+.key-pressed {
+	background: #FFFFDF;
+}
+
+.key-minor {
+	position: absolute;
+	border: 1px solid white;
+	background: black;
+	height: 100px;
+	width: 30px;
+}
+
+.key-minor.key-pressed {
+	background: #CCCCDF;
+}
+
+.switch {
+	float: right;
+	height: 25px;
+	width: 25px;
+	border: 1px solid black;
+}
+
+.switch-on {
+	background: green;
+}
+
+.switch-off {
+	background: red;
+}
+
+.piano {
+	background: black;
+	border: 1px solid black;
+	padding: 10px;
+	height: 200px;
+	width: 100%;
+	-moz-user-select: -moz-none;
+	-khtml-user-select: none;
+	-webkit-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
