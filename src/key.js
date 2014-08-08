@@ -2,6 +2,7 @@
 
 var React = require('react/addons');
 var mouse = require('./mouse');
+var sound = require('./sound');
 
 var KEY_PRESS_LENGTH = 250;
 
@@ -18,7 +19,8 @@ var Key = React.createClass({
 		this.setState({pressed: true});
 		var key = this.props.key;
 		var minor = this.props.scale == 'minor';
-		console.log(minor ? key.toLowerCase() : key.toUpperCase());
+		var myKey = minor ? key.toLowerCase() : key.toUpperCase();
+		sound(this.props.tone, KEY_PRESS_LENGTH);
 	},
 	continueNote: function() {
 		if (mouse.down) {

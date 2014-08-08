@@ -11,7 +11,7 @@ var Piano = React.createClass({
 		var x = 75;
 		letters.forEach(function(letter, i) {
 			var leftness = {left: x + i * 41};
-			keys[letter + "-" + i] = <Key key={letter} />;
+			keys[letter + "-" + i] = <Key key={letter} tone={500 + i * 45} />;
 			if (i < letters.length - 1) {
 				keys[letter + "-" + i + '-minor'] = <Key style={leftness} key={letter} scale='minor' />;
 			}
