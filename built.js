@@ -20374,48 +20374,53 @@ module.exports = require('./lib/React');
 
 var React = require('react/addons');
 var mouse = require('./mouse');
-var sound = require('./sound');
-
-var KEY_PRESS_LENGTH = 250;
+var Sound = require('./sound');
 
 var Key = React.createClass({displayName: 'Key',
-	timeoutID: 0,
-	getInitialState: function() {
-		return {pressed: false};
-	},
-	clearTimeout: function() {
-		clearTimeout(this.timeoutID);
+	componentWillMount: function() {
+		this.sound = new Sound();
 	},
 	startNote: function() {
-		this.clearTimeout();
+		if (!this.props.on) return;
 		this.setState({pressed: true});
-		var key = this.props.key;
 		var minor = this.props.scale == 'minor';
-		var myKey = minor ? key.toLowerCase() : key.toUpperCase();
-		sound(this.props.tone, KEY_PRESS_LENGTH);
+		this.sound.start(this.props.tone);
 	},
-	continueNote: function() {
+	handleMouseUp: function(e) {
+		this.shifty = e.shiftKey;
+		if (!this.shifty) {
+			this.endNote();
+		}
+	},
+	handleMouseLeave: function(e) {
+		if (!this.shifty) {
+			this.endNote();
+		}
+	},
+	continueNote: function(e) {
+		this.shifty = this.shifty || e.shiftKey;
 		if (mouse.down) {
 			this.startNote();
 		}
 	},
 	endNote: function() {
-		this.timeoutID = setTimeout(function() {
-			this.setState({pressed: false});
-		}.bind(this), KEY_PRESS_LENGTH);
+		this.sound.stop();
+		this.setState({pressed: false});
 	},
 	render: function() {
 		var classes = React.addons.classSet({
 			'key': true,
-			'key-pressed': this.state.pressed,
-			'key-minor': this.props.scale == 'minor'
+			'key-disabled': !this.props.on,
+			'key-pressed': this.state && this.state.pressed,
+			'key-minor': this.props.scale == 'minor',
+			'key-major': this.props.scale == 'major'
 		});
 		return (React.DOM.div({style: this.props.style, 
 					 className: classes, 
 					 onMouseMove: this.continueNote, 
 					 onMouseDown: this.startNote, 
-					 onMouseUp: this.endNote, 
-					 onMouseLeave: this.endNote}));
+					 onMouseUp: this.handleMouseUp, 
+					 onMouseLeave: this.handleMouseLeave}));
 	}
 });
 
@@ -20455,22 +20460,36 @@ var React = require('react');
 var Key = require('./key');
 var Switch = require('./switch');
 
+// constants
+var SCALE = ['c', 'c#', 'd', 'd#', 'e', 'f', 'f#', 'g', 'g#', 'a', 'a#', 'b'];
+var OCTAVES = 3;
+var START_TONE = 100;
+
+function generateKeys(on) {
+	var keys = [];
+	var tone = 0;
+	var i = 1;
+	for (i; i <= OCTAVES; i++) {
+		tone = START_TONE * Math.pow(2, i);
+		keys = keys.concat(SCALE.map(function(key) {
+			var scale = key.length > 1 ? "minor" : "major";
+			tone += scale === "major" ? 24 : 12;
+			return Key({scale: scale, on: on, tone: tone});
+		}));
+	}
+	return keys;
+}
+
 var Piano = React.createClass({displayName: 'Piano',
+	componentWillMount: function() {
+		this.keys = generateKeys(false);
+	},
+	onToggle: function(on) {
+		this.keys = generateKeys(on);
+		this.forceUpdate();
+	},
 	render: function() {
-		var letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'a', 'b', 'c'];
-		var keys = {};
-		var x = 75;
-		letters.forEach(function(letter, i) {
-			var leftness = {left: x + i * 41};
-			keys[letter + "-" + i] = Key({key: letter, tone: 500 + i * 45});
-			if (i < letters.length - 1) {
-				keys[letter + "-" + i + '-minor'] = Key({style: leftness, key: letter, scale: "minor"});
-			}
-		});
-		return (React.DOM.div({className: 'piano'}, 
-			Switch(null), 
-			keys
-		));
+		return (React.DOM.div({className: 'piano'}, this.keys, Switch({onChange: this.onToggle})));
 	}
 });
 
@@ -20478,40 +20497,29 @@ module.exports =  Piano;
 },{"./key":"/Users/jamuferguson/dev/piano/src/key.js","./switch":"/Users/jamuferguson/dev/piano/src/switch.js","react":"/Users/jamuferguson/dev/piano/node_modules/react/react.js"}],"/Users/jamuferguson/dev/piano/src/sound.js":[function(require,module,exports){
 var context = new webkitAudioContext();
 
-var keys = {
-	A: 2000,
-	a: 1750,
-	B: 1500,
-	A: 2000,
-	C: 1500,
-	c: 1250,
-	D: 1500,
-	d: 1000,
-	E: 1500,
-	e: 750,
-	F: 1500,
-	f: 650,
-	G: 1500,
-	g: 800
+var Sound = module.exports = function Sound() {
+	this.started = false;
 };
 
-function getFrequency(key) {
-	return keys[key] || 0;
-}
+Sound.prototype.start = function(tone) {
+	if (this.started) return;
 
-module.exports = function(tone, delay) {
 	console.log(tone);
+	this.engine = context.createOscillator();
+	this.engine.type = 0; // sine wave
+	this.frequency = tone;
+	this.engine.frequency.value = tone;
+	this.engine.connect(context.destination);
+	this.engine.start();
 
-	var oscillator = context.createOscillator();
-	oscillator.type = 0; // sine wave
-	oscillator.frequency.value = tone; // getFrequency(key);
-	oscillator.connect(context.destination);
-	oscillator.noteOn && oscillator.noteOn(0);
+	this.started = true;
+};
 
-	setTimeout(function() {
-		oscillator.stop();
-	}, delay);
-}
+Sound.prototype.stop = function() {
+	if (!this.started) return;
+	this.engine.stop();
+	this.started = false;
+};
 },{}],"/Users/jamuferguson/dev/piano/src/switch.js":[function(require,module,exports){
 /** @jsx React.DOM */
 
@@ -20521,7 +20529,8 @@ var Switch = React.createClass({displayName: 'Switch',
 	getInitialState: function() {
 		return {on: false};
 	},
-	handleClick: function(event) {
+	handleClick: function() {
+		this.props.onChange(!this.state.on);
 		this.setState({on: !this.state.on});
 	},
 	render: function() {

@@ -9,22 +9,36 @@ div {
 }
 
 .key {
-	border: 1px solid black;
 	background: white;
 	height: 100%;
 	width: 40px;
-	float: left;
-	margin-left: 1px;
+	display: inline-block;
+	border-top: 1px solid black;
 	color: khaki;
+}
+
+.key-major {
+	border-right: 1px solid black;
+	border-bottom: 1px solid black;
+}
+
+.key-major:first-child {
+	border-left: 1px solid black;
 }
 
 .key-pressed {
 	background: #FFFFDF;
 }
 
+.key-disabled {
+	opacity: .3;
+}
+
 .key-minor {
+	vertical-align: top;
 	position: absolute;
 	border: 1px solid white;
+	border-top: 1px solid black;
 	background: black;
 	height: 100px;
 	width: 30px;
@@ -50,7 +64,7 @@ div {
 }
 
 .piano {
-	background: black;
+	background: gold;
 	border: 1px solid black;
 	padding: 10px;
 	height: 200px;

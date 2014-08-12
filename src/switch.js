@@ -6,7 +6,8 @@ var Switch = React.createClass({
 	getInitialState: function() {
 		return {on: false};
 	},
-	handleClick: function(event) {
+	handleClick: function() {
+		this.props.onChange(!this.state.on);
 		this.setState({on: !this.state.on});
 	},
 	render: function() {

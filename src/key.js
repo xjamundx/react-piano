@@ -2,48 +2,53 @@
 
 var React = require('react/addons');
 var mouse = require('./mouse');
-var sound = require('./sound');
-
-var KEY_PRESS_LENGTH = 250;
+var Sound = require('./sound');
 
 var Key = React.createClass({
-	timeoutID: 0,
-	getInitialState: function() {
-		return {pressed: false};
-	},
-	clearTimeout: function() {
-		clearTimeout(this.timeoutID);
+	componentWillMount: function() {
+		this.sound = new Sound();
 	},
 	startNote: function() {
-		this.clearTimeout();
+		if (!this.props.on) return;
 		this.setState({pressed: true});
-		var key = this.props.key;
 		var minor = this.props.scale == 'minor';
-		var myKey = minor ? key.toLowerCase() : key.toUpperCase();
-		sound(this.props.tone, KEY_PRESS_LENGTH);
+		this.sound.start(this.props.tone);
 	},
-	continueNote: function() {
+	handleMouseUp: function(e) {
+		this.shifty = e.shiftKey;
+		if (!this.shifty) {
+			this.endNote();
+		}
+	},
+	handleMouseLeave: function(e) {
+		if (!this.shifty) {
+			this.endNote();
+		}
+	},
+	continueNote: function(e) {
+		this.shifty = this.shifty || e.shiftKey;
 		if (mouse.down) {
 			this.startNote();
 		}
 	},
 	endNote: function() {
-		this.timeoutID = setTimeout(function() {
-			this.setState({pressed: false});
-		}.bind(this), KEY_PRESS_LENGTH);
+		this.sound.stop();
+		this.setState({pressed: false});
 	},
 	render: function() {
 		var classes = React.addons.classSet({
 			'key': true,
-			'key-pressed': this.state.pressed,
-			'key-minor': this.props.scale == 'minor'
+			'key-disabled': !this.props.on,
+			'key-pressed': this.state && this.state.pressed,
+			'key-minor': this.props.scale == 'minor',
+			'key-major': this.props.scale == 'major'
 		});
 		return (<div style={this.props.style}
 					 className={classes}
 					 onMouseMove={this.continueNote}
 					 onMouseDown={this.startNote}
-					 onMouseUp={this.endNote}
-					 onMouseLeave={this.endNote} />);
+					 onMouseUp={this.handleMouseUp}
+					 onMouseLeave={this.handleMouseLeave} />);
 	}
 });
 
