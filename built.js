@@ -20463,7 +20463,7 @@ var Switch = require('./switch');
 // constants
 var SCALE = ['c', 'c#', 'd', 'd#', 'e', 'f', 'f#', 'g', 'g#', 'a', 'a#', 'b'];
 var OCTAVES = 3;
-var START_TONE = 100;
+var START_TONE = 50;
 
 function generateKeys(on) {
 	var keys = [];
@@ -20473,7 +20473,7 @@ function generateKeys(on) {
 		tone = START_TONE * Math.pow(2, i);
 		keys = keys.concat(SCALE.map(function(key) {
 			var scale = key.length > 1 ? "minor" : "major";
-			tone += scale === "major" ? 24 : 12;
+			tone += scale === "major" ? 20 : 10;
 			return Key({scale: scale, on: on, tone: tone});
 		}));
 	}
@@ -20481,15 +20481,14 @@ function generateKeys(on) {
 }
 
 var Piano = React.createClass({displayName: 'Piano',
-	componentWillMount: function() {
-		this.keys = generateKeys(false);
+	getInitialState: function() {
+		return {keys: generateKeys(false)};
 	},
 	onToggle: function(on) {
-		this.keys = generateKeys(on);
-		this.forceUpdate();
+		this.setState({keys: generateKeys(on)});
 	},
 	render: function() {
-		return (React.DOM.div({className: 'piano'}, this.keys, Switch({onChange: this.onToggle})));
+		return React.DOM.div({className: 'piano'}, this.state.keys, Switch({onChange: this.onToggle}));
 	}
 });
 
