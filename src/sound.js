@@ -1,36 +1,25 @@
 var context = new webkitAudioContext();
 
-var keys = {
-	A: 2000,
-	a: 1750,
-	B: 1500,
-	A: 2000,
-	C: 1500,
-	c: 1250,
-	D: 1500,
-	d: 1000,
-	E: 1500,
-	e: 750,
-	F: 1500,
-	f: 650,
-	G: 1500,
-	g: 800
+var Sound = module.exports = function Sound() {
+	this.started = false;
 };
 
-function getFrequency(key) {
-	return keys[key] || 0;
-}
+Sound.prototype.start = function(tone) {
+	if (this.started) return;
 
-module.exports = function(tone, delay) {
 	console.log(tone);
+	this.engine = context.createOscillator();
+	this.engine.type = 0; // sine wave
+	this.frequency = tone;
+	this.engine.frequency.value = tone;
+	this.engine.connect(context.destination);
+	this.engine.start();
 
-	var oscillator = context.createOscillator();
-	oscillator.type = 0; // sine wave
-	oscillator.frequency.value = tone; // getFrequency(key);
-	oscillator.connect(context.destination);
-	oscillator.noteOn && oscillator.noteOn(0);
+	this.started = true;
+};
 
-	setTimeout(function() {
-		oscillator.stop();
-	}, delay);
-}
+Sound.prototype.stop = function() {
+	if (!this.started) return;
+	this.engine.stop();
+	this.started = false;
+};

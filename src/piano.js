@@ -4,22 +4,36 @@ var React = require('react');
 var Key = require('./key');
 var Switch = require('./switch');
 
+// constants
+var SCALE = ['c', 'c#', 'd', 'd#', 'e', 'f', 'f#', 'g', 'g#', 'a', 'a#', 'b'];
+var OCTAVES = 3;
+var START_TONE = 100;
+
+function generateKeys(on) {
+	var keys = [];
+	var tone = 0;
+	var i = 1;
+	for (i; i <= OCTAVES; i++) {
+		tone = START_TONE * Math.pow(2, i);
+		keys = keys.concat(SCALE.map(function(key) {
+			var scale = key.length > 1 ? "minor" : "major";
+			tone += scale === "major" ? 24 : 12;
+			return <Key scale={scale} on={on} tone={tone} />;
+		}));
+	}
+	return keys;
+}
+
 var Piano = React.createClass({
+	componentWillMount: function() {
+		this.keys = generateKeys(false);
+	},
+	onToggle: function(on) {
+		this.keys = generateKeys(on);
+		this.forceUpdate();
+	},
 	render: function() {
-		var letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'a', 'b', 'c'];
-		var keys = {};
-		var x = 75;
-		letters.forEach(function(letter, i) {
-			var leftness = {left: x + i * 41};
-			keys[letter + "-" + i] = <Key key={letter} tone={500 + i * 45} />;
-			if (i < letters.length - 1) {
-				keys[letter + "-" + i + '-minor'] = <Key style={leftness} key={letter} scale='minor' />;
-			}
-		});
-		return (<div className={'piano'} >
-			<Switch />
-			{keys}
-		</div>);
+		return (<div className={'piano'}  >{this.keys}<Switch onChange={this.onToggle} /></div>);
 	}
 });
 
